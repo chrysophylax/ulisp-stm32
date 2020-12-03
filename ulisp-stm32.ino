@@ -480,16 +480,29 @@ int SDReadInt (File file) {
   return b0 | b1<<8 | b2<<16 | b3<<24;
 }
 #else
+#if defined(officialstm32)
+uint8_t FlashReadByte (unsigned int *addr) {
+	uint8_t data = eeprom_buffered_read_byte((uint32_t) addr);
+	(*addr)++;
+	return data;
+}
+#else
 uint16_t FlashRead16 (unsigned int *addr) {
   uint16_t data = (*(__IO uint16*)((*addr) + Eeprom));
   (*addr) = (*addr) + 2;
   return data;
 }
-
+#endif
 int FlashReadInt (unsigned int *addr) {
+#if defined(officialstm32)
+	uint8_t b0 = FlashReadByte(addr); uint8_t b1 = FlashReadByte(addr);
+	uint8_t b2 = FlashReadByte(addr); uint8_t b3 = FlashReadByte(addr);
+  return b0 | b1<<8 | b2<<16 | b3<<24;
+#else
   uint16_t b0 = FlashRead16(addr);
   uint16_t b1 = FlashRead16(addr);
   return b0 | b1<<16;
+#endif
 }
 #endif
 
