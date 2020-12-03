@@ -466,7 +466,11 @@ int saveimage (object *arg) {
   FlashWriteInt(&addr, (uintptr_t)GCStack);
   #if SYMBOLTABLESIZE > BUFFERSIZE
   FlashWriteInt(&addr, (uintptr_t)SymbolTop);
+#if defined(officialstm32)
+	for (int i=0; i<SYMBOLTABLESIZE; i++) FlashWriteByte(&addr, SymbolTable[i]);
+#else
   for (int i=0; i<SYMBOLTABLESIZE; i=i+2) FlashWrite16(&addr, SymbolTable[i] | SymbolTable[i+1]<<8);
+#endif
   #endif
   for (unsigned int i=0; i<imagesize; i++) {
     object *obj = &Workspace[i];
@@ -543,11 +547,15 @@ int loadimage (object *arg) {
   GCStack = (object *)FlashReadInt(&addr);
   #if SYMBOLTABLESIZE > BUFFERSIZE
   SymbolTop = (char *)FlashReadInt(&addr);
+#if defined(officialstm32)
+	for (int i=0; i<SYMBOLTABLESIZE; i++) SymbolTable[i] = FlashReadByte(&addr);
+#else
   for (int i=0; i<SYMBOLTABLESIZE; i=i+2) {
     uint16_t bytes = FlashRead16(&addr);
     SymbolTable[i] = bytes & 0xFF;
     SymbolTable[i+1] = bytes>>8 & 0xFF;
   }
+#endif
   #endif
   for (int i=0; i<imagesize; i++) {
     object *obj = &Workspace[i];
