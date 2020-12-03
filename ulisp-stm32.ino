@@ -25,6 +25,10 @@ const char LispLibrary[] PROGMEM = "";
 #include <limits.h>
 #include <EEPROM.h>
 
+#if defined(officialstm32)
+#define WiringPinMode                uint32_t
+#endif
+
 #if defined(sdcardsupport)
 #include <SD.h>
 #define SDSIZE 172
