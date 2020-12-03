@@ -15,7 +15,7 @@ const char LispLibrary[] PROGMEM = "";
 // #define printgcs
 // #define sdcardsupport
 // #define lisplibrary
-
+#define officialstm32
 // Includes
 
 // #include "LispLibrary.h"
@@ -380,22 +380,42 @@ void SDWriteInt (File file, int data) {
 }
 #else
 void FlashSetup () {
+#if defined(officialstm32)
+	for (uint16_t i=0; i<E2END; i++){
+		eeprom_buffered_write_byte(i, 0);
+	}
+	eeprom_buffer_flush();
+	//no way to check if erase failed through buffered API
+#else
   FLASH_Unlock();
   uint16_t Status;
   for (int page = Eeprom; page < 0x8020000; page = page + 0x400) {
     Status = FLASH_ErasePage(page);
     if (Status != FLASH_COMPLETE) error2(SAVEIMAGE, PSTR("flash erase failed"));
   }
+#endif
 }
 
+#if defined(officialstm32)
+void FlashWriteByte (unsigned int *addr, uint8_t data) {
+	eeprom_buffered_write_byte((uint32_t) *addr, data);
+	(*addr)++;
+}
+#else
 void FlashWrite16 (unsigned int *addr, uint16_t data) {
   uint16_t Status = FLASH_ProgramHalfWord((*addr) + Eeprom, data);
   if (Status != FLASH_COMPLETE) error2(SAVEIMAGE, PSTR("flash write failed"));
   (*addr) = (*addr) + 2;
 }
+#endif
 
 void FlashWriteInt (unsigned int *addr, int data) {
+#if defined(officialstm32)
+  FlashWriteByte(addr, data & 0xFF); FlashWriteByte(addr, data>>8 & 0xFF);
+  FlashWriteByte(addr, data>>16 & 0xFF); FlashWriteByte(addr, data>>24 & 0xFF);
+#else
   FlashWrite16(addr, data & 0xFFFF); FlashWrite16(addr, data>>16 & 0xFFFF);
+#endif
 }
 #endif
 
