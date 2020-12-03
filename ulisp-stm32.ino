@@ -477,6 +477,9 @@ int saveimage (object *arg) {
     FlashWriteInt(&addr, (uintptr_t)car(obj));
     FlashWriteInt(&addr, (uintptr_t)cdr(obj));
   }
+#if defined(officialstm32)
+	eeprom_buffer_flush();
+#endif
   return imagesize; 
 }
 #endif
@@ -539,6 +542,13 @@ int loadimage (object *arg) {
   gc(NULL, NULL);
   return imagesize;
 #else
+#if defined(officialstm32)
+	//clear and fill the buffer
+	for (uint16_t i=0; i<E2END; i++){
+		eeprom_buffered_write_byte(i, 0);
+	}
+	eeprom_buffer_fill();
+#endif
   unsigned int addr = 0;
   FlashReadInt(&addr); // Skip eval address
   int imagesize = FlashReadInt(&addr);
