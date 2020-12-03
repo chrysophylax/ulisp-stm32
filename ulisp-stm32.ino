@@ -493,7 +493,7 @@ int SDReadInt (File file) {
 #else
 #if defined(officialstm32)
 uint8_t FlashReadByte (unsigned int *addr) {
-	uint8_t data = eeprom_buffered_read_byte((uint32_t) addr);
+	uint8_t data = eeprom_buffered_read_byte((uint32_t) *addr);
 	(*addr)++;
 	return data;
 }
