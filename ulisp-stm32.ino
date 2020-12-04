@@ -27,6 +27,7 @@ const char LispLibrary[] PROGMEM = "";
 
 #if defined(officialstm32)
 #define WiringPinMode                uint32_t
+#define FLASH_BASE_ADDRESS  0x801D800
 #endif
 
 #if defined(sdcardsupport)
